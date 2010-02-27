@@ -6,15 +6,17 @@ require File.dirname(__FILE__) + '/lib/canable'
 begin
   require 'jeweler'
   Jeweler::Tasks.new do |gem|
-    gem.name = "canable"
-    gem.summary = %Q{TODO: one-line summary of your gem}
-    gem.description = %Q{TODO: longer description of your gem}
-    gem.email = "nunemaker@gmail.com"
-    gem.homepage = "http://github.com/jnunemaker/canable"
-    gem.authors = ["John Nunemaker"]
-    gem.add_development_dependency "thoughtbot-shoulda", ">= 0"
+    gem.name        = "canable"
+    gem.summary     = %Q{Simple permissions that I have used on my last several projects so I figured it was time to abstract and wrap up into something more easily reusable.}
+    gem.description = %Q{Simple permissions that I have used on my last several projects so I figured it was time to abstract and wrap up into something more easily reusable.}
+    gem.email       = "nunemaker@gmail.com"
+    gem.homepage    = "http://github.com/jnunemaker/canable"
+    gem.authors     = ["John Nunemaker"]
+    gem.version     = Canable::Version
+    gem.add_development_dependency "shoulda", "2.10.2"
+    gem.add_development_dependency "mongo_mapper", "0.7"
+    gem.add_development_dependency "mocha", "0.9.8"
     gem.add_development_dependency "yard", ">= 0"
-    gem.version = Canable::Version
     # gem is a Gem::Specification... see http://www.rubygems.org/read/chapter/20 for additional settings
   end
   Jeweler::GemcutterTasks.new
