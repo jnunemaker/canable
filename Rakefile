@@ -1,6 +1,8 @@
 require 'rubygems'
 require 'rake'
 
+require File.dirname(__FILE__) + '/lib/canable'
+
 begin
   require 'jeweler'
   Jeweler::Tasks.new do |gem|
@@ -12,6 +14,7 @@ begin
     gem.authors = ["John Nunemaker"]
     gem.add_development_dependency "thoughtbot-shoulda", ">= 0"
     gem.add_development_dependency "yard", ">= 0"
+    gem.version = Canable::Version
     # gem is a Gem::Specification... see http://www.rubygems.org/read/chapter/20 for additional settings
   end
   Jeweler::GemcutterTasks.new

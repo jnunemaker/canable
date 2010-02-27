@@ -1,4 +1,6 @@
 module Canable
+  Version = '0.1'
+
   # Module that holds all the can_action? methods.
   module Cans; end
 
