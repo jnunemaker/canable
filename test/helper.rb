@@ -1,8 +1,8 @@
 require 'test/unit'
 
-gem 'mocha', '0.9.8'
-gem 'shoulda', '2.10.2'
-gem 'mongo_mapper', '0.7'
+gem 'mocha', '~> 0.9.8'
+gem 'shoulda', '~> 2.10.2'
+gem 'mongo_mapper'
 
 require 'mocha'
 require 'shoulda'
@@ -13,26 +13,22 @@ $LOAD_PATH.unshift(File.dirname(__FILE__))
 require 'canable'
 
 class Test::Unit::TestCase
-end
+  def Doc(name=nil, &block)
+    klass = Class.new do
+      include MongoMapper::Document
+      set_collection_name "test#{rand(20)}"
 
-def Doc(name=nil, &block)
-  klass = Class.new do
-    include MongoMapper::Document
-    set_collection_name "test#{rand(20)}"
-
-    if name
-      class_eval "def self.name; '#{name}' end"
-      class_eval "def self.to_s; '#{name}' end"
+      if name
+        class_eval "def self.name; '#{name}' end"
+        class_eval "def self.to_s; '#{name}' end"
+      end
     end
-  end
 
-  klass.class_eval(&block) if block_given?
-  klass.collection.remove
-  klass
+    klass.class_eval(&block) if block_given?
+    klass.collection.remove
+    klass
+  end
 end
 
-test_dir = File.expand_path(File.dirname(__FILE__) + '/../tmp')
-FileUtils.mkdir_p(test_dir) unless File.exist?(test_dir)
-
-MongoMapper.connection = Mongo::Connection.new('127.0.0.1', 27017, {:logger => Logger.new(test_dir + '/test.log')})
+MongoMapper.connection = Mongo::Connection.new('127.0.0.1', 27017)
 MongoMapper.database = 'test'

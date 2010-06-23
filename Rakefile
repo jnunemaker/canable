@@ -13,11 +13,10 @@ begin
     gem.homepage    = "http://github.com/jnunemaker/canable"
     gem.authors     = ["John Nunemaker"]
     gem.version     = Canable::Version
-    gem.add_development_dependency "shoulda", "2.10.2"
-    gem.add_development_dependency "mongo_mapper", "0.7"
-    gem.add_development_dependency "mocha", "0.9.8"
+    gem.add_development_dependency "shoulda", "~> 2.10.2"
+    gem.add_development_dependency "mocha", "~> 0.9.8"
+    gem.add_development_dependency "mongo_mapper"
     gem.add_development_dependency "yard", ">= 0"
-    # gem is a Gem::Specification... see http://www.rubygems.org/read/chapter/20 for additional settings
   end
   Jeweler::GemcutterTasks.new
 rescue LoadError

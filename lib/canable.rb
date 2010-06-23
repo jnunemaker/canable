@@ -11,8 +11,7 @@ module Canable
   module Enforcers
     def self.included(controller)
       controller.class_eval do
-        Canable.actions.each do |can, able|
-          delegate      "can_#{can}?", :to => :current_user
+        Canable.cans.each do |can|
           helper_method "can_#{can}?" if controller.respond_to?(:helper_method)
           hide_action   "can_#{can}?" if controller.respond_to?(:hide_action)
         end
@@ -30,6 +29,10 @@ module Canable
   #   {:view => :viewable, ...}
   def self.actions
     @actions
+  end
+
+  def self.cans
+    actions.keys
   end
 
   # Adds an action to actions and the correct methods to can and able modules.
@@ -63,6 +66,10 @@ module Canable
 
     def self.add_enforcer_method(can)
       Enforcers.module_eval <<-EOM
+        def can_#{can}?(resource)
+          current_user.can_#{can}?(resource)
+        end
+
         def enforce_#{can}_permission(resource)
           raise Canable::Transgression unless can_#{can}?(resource)
         end

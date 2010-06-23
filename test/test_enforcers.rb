@@ -7,8 +7,18 @@ class EnforcersTest < Test::Unit::TestCase
         include Canable::Enforcers
         attr_accessor :current_user, :article
 
+        # Overriding example
+        def can_update?(resource)
+          return false if current_user.nil?
+          super
+        end
+
         def show
           enforce_view_permission(article)
+        end
+
+        def update
+          enforce_update_permission(article)
         end
       end
 
@@ -27,6 +37,11 @@ class EnforcersTest < Test::Unit::TestCase
     should "raise error if cannot" do
       @user.expects(:can_view?).with(@article).returns(false)
       assert_raises(Canable::Transgression) { @controller.show }
+    end
+
+    should "be able to override can_xx? method" do
+      @controller.current_user = nil
+      assert_raises(Canable::Transgression) { @controller.update }
     end
   end
 end
