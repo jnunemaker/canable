@@ -70,8 +70,8 @@ module Canable
           current_user.can_#{can}?(resource)
         end
 
-        def enforce_#{can}_permission(resource)
-          raise Canable::Transgression unless can_#{can}?(resource)
+        def enforce_#{can}_permission(resource, message="")
+          raise(Canable::Transgression, message) unless can_#{can}?(resource)
         end
         private :enforce_#{can}_permission
       EOM
