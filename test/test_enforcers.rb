@@ -20,6 +20,10 @@ class EnforcersTest < Test::Unit::TestCase
         def update
           enforce_update_permission(article)
         end
+
+        def edit
+          enforce_update_permission(article, "You Can't Edit This")
+        end
       end
 
       @article                 = mock('article')
@@ -42,6 +46,15 @@ class EnforcersTest < Test::Unit::TestCase
     should "be able to override can_xx? method" do
       @controller.current_user = nil
       assert_raises(Canable::Transgression) { @controller.update }
+    end
+
+    should "pass message around the stack" do
+      @controller.current_user = nil
+      begin
+        @controller.edit
+      rescue Canable::Transgression => e
+        assert_equal e.message, "You Can't Edit This"
+      end
     end
   end
 end
