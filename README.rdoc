@@ -103,6 +103,28 @@ You can add your own actions like this:
 
 The first parameter is the can method (ie: can_publish?) and the second is the able method (ie: publishable_by?). 
 
+Ables can also be added as class methods. For example, to restrict access to an index action:
+
+    Canable.add(:index, :indexable)
+    
+Then enforce by passing the class instead of the instance:
+
+    class ArticlesController < ApplicationController
+      def index
+        @articles = Article.all
+        enforce_index_permission(Article)
+      end
+    end
+
+Then in the article model, add the able check as a class method:
+
+    class Article
+      ...
+      def self.indexable_by?(user)
+        !user.nil?
+      end
+    end
+
 == Review
 
 So, lets review: cans go on user model, ables go on everything, you override ables in each model where you want to enforce permissions, and enforcers go after each time you find or initialize an object in a controller. Bing, bang, boom.

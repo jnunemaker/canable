@@ -67,7 +67,7 @@ module Canable
     def self.add_enforcer_method(can)
       Enforcers.module_eval <<-EOM
         def can_#{can}?(resource)
-          current_user.can_#{can}?(resource)
+          current_user && current_user.can_#{can}?(resource)
         end
 
         def enforce_#{can}_permission(resource, message="")
