@@ -1,12 +1,7 @@
 require 'test/unit'
-
-gem 'mocha', '~> 0.9.8'
-gem 'shoulda', '~> 2.10.2'
-gem 'mongo_mapper'
-
 require 'mocha'
 require 'shoulda'
-require 'mongo_mapper'
+require 'active_support/all'
 
 $LOAD_PATH.unshift(File.join(File.dirname(__FILE__), '..', 'lib'))
 $LOAD_PATH.unshift(File.dirname(__FILE__))
