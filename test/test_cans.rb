@@ -7,7 +7,7 @@ class CansTest < Test::Unit::TestCase
         include Canable::Cans
       end
       
-      @user = klass.create(:name => 'John')
+      @user = klass.new(:name => 'John')
     end
 
     context "can_view?" do
