@@ -7,6 +7,7 @@ class AblesTest < Test::Unit::TestCase
         include Canable::Ables
       end
 
+      @klass    = klass
       @resource = klass.new
       @user     = mock('user')
     end
@@ -25,6 +26,18 @@ class AblesTest < Test::Unit::TestCase
 
     should "default destroyable_by? to true" do
       assert @resource.destroyable_by?(@user)
+    end
+
+    should "raise error if able not defined" do
+      assert_raises(NoMethodError) { @resource.publishable_by?(@user) }
+    end
+
+    should "default viewable_by? to true on class" do
+      assert @klass.viewable_by?(@user)
+    end
+
+    should "default able method ignores passed options" do
+      assert @resource.viewable_by?(@user, :day => "Saturday")
     end
   end
   
@@ -47,5 +60,29 @@ class AblesTest < Test::Unit::TestCase
       assert @resource.viewable_by?(@john)
       assert ! @resource.viewable_by?(@steve)
     end
+  end
+
+  context "Class that overrides an able method and accepts options" do
+    setup do
+      klass = Doc do
+        include Canable::Ables
+        
+        def viewable_by?(user, options={})
+          user.name == 'John' && options[:day] == "Saturday"
+        end
+      end
+      
+      @resource = klass.new
+      @john     = mock('user', :name => 'John')
+    end
+    
+    should "use the options on the overriden method" do
+      assert @resource.viewable_by?(@john, :day => "Saturday")
+    end
+
+    should "use the options on the overriden method" do
+      assert ! @resource.viewable_by?(@john, :day => "Friday")
+    end
+    
   end
 end

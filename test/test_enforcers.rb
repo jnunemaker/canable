@@ -8,7 +8,7 @@ class EnforcersTest < Test::Unit::TestCase
         attr_accessor :current_user, :article
 
         # Overriding example
-        def can_update?(resource)
+        def can_update?(resource, options={})
           return false if current_user && current_user.banned?
           super
         end
@@ -34,12 +34,12 @@ class EnforcersTest < Test::Unit::TestCase
     end
 
     should "not raise error if can" do
-      @user.expects(:can_view?).with(@article).returns(true)
+      @user.expects(:can_view?).with(@article, {}).returns(true)
       assert_nothing_raised { @controller.show }
     end
 
     should "raise error if cannot" do
-      @user.expects(:can_view?).with(@article).returns(false)
+      @user.expects(:can_view?).with(@article, {}).returns(false)
       assert_raises(Canable::Transgression) { @controller.show }
     end
     

@@ -124,6 +124,31 @@ Then in the article model, add the able check as a class method:
         !user.nil?
       end
     end
+    
+== Passing Additional Parameters to Ables
+
+You can also pass additional information to the able methods through an options hash. For example:
+
+    class Article
+      include Canable::Ables
+      
+      def self.indexable_by?(user, options={})
+        options[:domain] == "public"
+      end
+    end
+    
+    class ArticlesController < ApplicationController
+      def index
+        enforce_index_permission(Article, :domain => get_domain)
+        @articles = Article.all
+      end
+    end
+    
+And in the views the can methods can also pass the options.
+
+    can_index?(Article, :domain => get_domain)
+
+This example used a class able method, but options can equally be used on instance able methods.
 
 == Review
 
