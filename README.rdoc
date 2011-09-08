@@ -43,7 +43,7 @@ Lets say an article can be viewed and created by anyone, but only updated or des
 Lets look at some sample code now:
 
     john = User.create(:name => 'John')
-    steve = User.create(:name =. 'Steve')
+    steve = User.create(:name => 'Steve')
     
     ruby = Article.new(:title => 'Ruby')
     john.can_create?(ruby) # true
