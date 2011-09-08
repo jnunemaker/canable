@@ -9,13 +9,13 @@ module Canable
         def method_missing(sym, *args, &block)
           sym.to_s =~ /^(#{Canable.ables.join('|')})_by\\?$/ ? true : super
         end
-        def respond_to?(sym)
+        def respond_to?(sym, include_private=false)
           sym.to_s =~ /^(#{Canable.ables.join('|')})_by\\?$/ ? true : super
         end
         def self.method_missing(sym, *args, &block)
           sym.to_s =~ /^(#{Canable.ables.join('|')})_by\\?$/ ? true : super
         end
-        def self.respond_to?(sym)
+        def self.respond_to?(sym, include_private=false)
           sym.to_s =~ /^(#{Canable.ables.join('|')})_by\\?$/ ? true : super
         end
       EOM
