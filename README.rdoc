@@ -125,7 +125,7 @@ Then in the article model, add the able check as a class method:
       end
     end
     
-== Passing Additional Parameters to Ables
+== Passing Additional Arguments to Ables
 
 You can also pass additional information to the able methods through an options hash. For example:
 
