@@ -40,6 +40,37 @@ class AblesTest < Test::Unit::TestCase
       assert @resource.viewable_by?(@user, :day => "Saturday")
     end
   end
+
+  context "Class with Canable::Ables included with overridden canability default" do
+    setup do
+      klass = Doc do
+        include Canable::Ables
+        def self.default_canability(able_name=nil)
+          %w(viewable updatable).include?(able_name)
+        end
+      end
+
+      @klass    = klass
+      @resource = klass.new
+      @user     = mock('user')
+    end
+
+    should "default viewable_by? to false" do
+      assert @resource.viewable_by?(@user)
+    end
+
+    should "default updatable_by? to false" do
+      assert @resource.updatable_by?(@user)
+    end
+
+    should "default creatable_by? to false" do
+      assert ! @resource.creatable_by?(@user)
+    end
+
+    should "default destroyable_by? to false" do
+      assert ! @resource.destroyable_by?(@user)
+    end
+  end
   
   context "Class that overrides an able method" do
     setup do

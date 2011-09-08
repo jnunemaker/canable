@@ -150,6 +150,23 @@ And in the views the can methods can also pass the options.
 
 This example used a class able method, but options can equally be used on instance able methods.
 
+== Changing the Default Able
+
+You can easily change the default on the able methods from true to false to lock down security more. Simply add the following to your canable initializer file (./config/initializers/canable.rb):
+
+    Canable.default_canability = false
+    
+This will change the global default, but you can also set it on a class level by overriding default_canability on the class.
+
+    class Article
+      include Canable::Ables
+
+      # Only allow viewable by default
+      def self.default_canability(able_name)
+        able_name == "viewable"
+      end
+    end
+
 == Review
 
 So, lets review: cans go on user model, ables go on everything, you override ables in each model where you want to enforce permissions, and enforcers go after each time you find or initialize an object in a controller. Bing, bang, boom.
