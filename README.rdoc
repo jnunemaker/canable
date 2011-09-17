@@ -154,15 +154,15 @@ This example used a class able method, but options can equally be used on instan
 
 You can easily change the default on the able methods from true to false to lock down security more. Simply add the following to your canable initializer file (./config/initializers/canable.rb):
 
-    Canable.default_canability = false
+    Canable.can_default = false
     
-This will change the global default, but you can also set it on a class level by overriding default_canability on the class.
+This will change the global default, but you can also set it on a class level by overriding can_default on the class.
 
     class Article
       include Canable::Ables
 
       # Only allow viewable by default
-      def self.default_canability(able_name)
+      def self.can_default(able_name)
         able_name == "viewable"
       end
     end

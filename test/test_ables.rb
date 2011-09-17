@@ -45,7 +45,7 @@ class AblesTest < Test::Unit::TestCase
     setup do
       klass = Doc do
         include Canable::Ables
-        def self.default_canability(able_name=nil)
+        def self.can_default(able_name=nil)
           %w(viewable updatable).include?(able_name)
         end
       end

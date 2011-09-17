@@ -6,20 +6,20 @@ module Canable
   module Ables
     def self.included(klass)
       klass.class_eval <<-EOM
-        def self.default_canability(able_name=nil)
-          #{Canable.default_canability}
+        def self.can_default(able_name=nil)
+          #{Canable.can_default}
         end
         def method_missing(sym, *args, &block)
-          sym.to_s =~ /^(#{Canable.ables.join('|')})_by\\?$/ ? self.class.default_canability($1) : super
+          sym.to_s =~ /^(#{Canable.ables.join('|')})_by\\?$/ ? self.class.can_default($1) : super
         end
         def respond_to?(sym, include_private=false)
-          sym.to_s =~ /^(#{Canable.ables.join('|')})_by\\?$/ ? self.class.default_canability($1) : super
+          sym.to_s =~ /^(#{Canable.ables.join('|')})_by\\?$/ ? self.class.can_default($1) : super
         end
         def self.method_missing(sym, *args, &block)
-          sym.to_s =~ /^(#{Canable.ables.join('|')})_by\\?$/ ? default_canability($1) : super
+          sym.to_s =~ /^(#{Canable.ables.join('|')})_by\\?$/ ? can_default($1) : super
         end
         def self.respond_to?(sym, include_private=false)
-          sym.to_s =~ /^(#{Canable.ables.join('|')})_by\\?$/ ? default_canability($1) : super
+          sym.to_s =~ /^(#{Canable.ables.join('|')})_by\\?$/ ? can_default($1) : super
         end
       EOM
     end
@@ -41,7 +41,7 @@ module Canable
   class Transgression < StandardError; end
   
   # The default value for all able methods
-  @default_canability = true
+  @can_default = true
   
   # Default actions to an empty hash.
   @actions = {}
@@ -60,12 +60,12 @@ module Canable
     actions.values
   end
   
-  def self.default_canability
-    @default_canability
+  def self.can_default
+    @can_default
   end
 
-  def self.default_canability=(value)
-    @default_canability = value
+  def self.can_default=(value)
+    @can_default = value
   end
 
   # Adds an action to actions and the correct methods to can and able modules.
