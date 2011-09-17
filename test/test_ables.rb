@@ -43,23 +43,22 @@ class AblesTest < Test::Unit::TestCase
 
   context "Class with Canable::Ables included with overridden canability default" do
     setup do
-      klass = Doc do
+      @klass = Doc do
         include Canable::Ables
         def self.can_default(able_name=nil)
           %w(viewable updatable).include?(able_name)
         end
       end
 
-      @klass    = klass
-      @resource = klass.new
+      @resource = @klass.new
       @user     = mock('user')
     end
 
-    should "default viewable_by? to false" do
+    should "default viewable_by? to true" do
       assert @resource.viewable_by?(@user)
     end
 
-    should "default updatable_by? to false" do
+    should "default updatable_by? to true" do
       assert @resource.updatable_by?(@user)
     end
 
