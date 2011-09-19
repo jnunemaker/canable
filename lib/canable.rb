@@ -5,23 +5,28 @@ module Canable
   # Module that holds all the [method]able_by? methods.
   module Ables
     def self.included(klass)
-      klass.class_eval <<-EOM
-        def self.can_default(able_name=nil)
-          #{Canable.can_default}
+      klass.instance_eval <<-EOM
+        def able_check(user, able, options={})
+          default_able(able)
         end
-        def method_missing(sym, *args, &block)
-          sym.to_s =~ /^(#{Canable.ables.join('|')})_by\\?$/ ? self.class.can_default($1) : super
-        end
-        def respond_to?(sym, include_private=false)
-          sym.to_s =~ /^(#{Canable.ables.join('|')})_by\\?$/ ? self.class.can_default($1) : super
-        end
-        def self.method_missing(sym, *args, &block)
-          sym.to_s =~ /^(#{Canable.ables.join('|')})_by\\?$/ ? can_default($1) : super
-        end
-        def self.respond_to?(sym, include_private=false)
-          sym.to_s =~ /^(#{Canable.ables.join('|')})_by\\?$/ ? can_default($1) : super
+        def default_able(able=nil)
+          #{Canable.able_default}
         end
       EOM
+      Canable.ables.each do |able|
+        klass.instance_eval <<-EOM
+          def #{able}_by?(*args)
+            user, options = args
+            able_check(user, :#{able}, options || {})
+          end
+        EOM
+        klass.class_eval <<-EOM
+          def #{able}_by?(*args)
+            user, options = args
+            self.class.able_check(user, :#{able}, options || {})
+          end
+        EOM
+      end
     end
   end
 
@@ -33,6 +38,14 @@ module Canable
           helper_method "can_#{can}?" if controller.respond_to?(:helper_method)
           hide_action   "can_#{can}?" if controller.respond_to?(:hide_action)
         end
+        
+        private
+        
+          def transgression_message(options)
+            return options if options.is_a?(String)
+            return options[:message] if options.is_a?(Hash)
+            ""
+          end
       end
     end
   end
@@ -41,7 +54,7 @@ module Canable
   class Transgression < StandardError; end
   
   # The default value for all able methods
-  @can_default = true
+  @able_default = true
   
   # Default actions to an empty hash.
   @actions = {}
@@ -60,12 +73,12 @@ module Canable
     actions.values
   end
   
-  def self.can_default
-    @can_default
+  def self.able_default
+    @able_default
   end
 
-  def self.can_default=(value)
-    @can_default = value
+  def self.able_default=(value)
+    @able_default = value
   end
 
   # Adds an action to actions and the correct methods to can and able modules.
@@ -82,30 +95,29 @@ module Canable
   
     def self.add_can_method(can, able)
       Cans.module_eval <<-EOM
-        def can_#{can}?(resource, options={})
+        def can_#{can}?(*args)
+          resource, options = args
           return false if resource.blank?
-          if options.blank?
-            resource.#{able}_by?(self)
-          else
-            resource.#{able}_by?(self, options)
-          end
+          resource.method(:#{able}_by?).arity == 1 ? resource.#{able}_by?(self) : resource.#{able}_by?(self, options)
         end
       EOM
     end
-
+    
     def self.add_enforcer_method(can)
       Enforcers.module_eval <<-EOM
-        def can_#{can}?(resource, options={})
+        def can_#{can}?(*args)
+          resource, options = args
           return false if current_user.blank?
           current_user.can_#{can}?(resource, options)
         end
-
-        def enforce_#{can}_permission(resource, options={})
-          unless can_#{can}?(resource, options)
-            message = options.kind_of?(String) ? options : options[:message] || ""
-            raise(Canable::Transgression, message)
+        
+        def enforce_#{can}_permission(*args)
+          resource, options = args
+          unless method(:can_#{can}?).arity == 1 ? can_#{can}?(resource) : can_#{can}?(resource, options)
+            raise(Canable::Transgression, transgression_message(options))
           end
         end
+        
         private :enforce_#{can}_permission
       EOM
     end
