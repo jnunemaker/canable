@@ -3,6 +3,8 @@ require 'helper'
 class EnforcersTest < Test::Unit::TestCase
   context "Including Canable::Enforcers in a class" do
     setup do
+      Canable.able_default = true
+
       klass = Class.new do
         include Canable::Enforcers
         attr_accessor :current_user, :article

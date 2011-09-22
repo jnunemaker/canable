@@ -3,6 +3,8 @@ require 'helper'
 class AblesTest < Test::Unit::TestCase
   context "Class with Canable::Ables included" do
     setup do
+      Canable.able_default = true
+
       @klass = Doc do
         include Canable::Ables
       end
@@ -63,6 +65,8 @@ class AblesTest < Test::Unit::TestCase
 
   context "Class with Canable::Ables included with overridden able_check" do
     setup do
+      Canable.able_default = true
+
       klass = Doc do
         include Canable::Ables
         def self.able_check(user, able, options={})
@@ -107,6 +111,8 @@ class AblesTest < Test::Unit::TestCase
   
   context "Class that overrides an able method" do
     setup do
+      Canable.able_default = true
+
       klass = Doc do
         include Canable::Ables
         
@@ -128,6 +134,8 @@ class AblesTest < Test::Unit::TestCase
 
   context "Class that overrides an able method and accepts options" do
     setup do
+      Canable.able_default = true
+
       klass = Doc do
         include Canable::Ables
         

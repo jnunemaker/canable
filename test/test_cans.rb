@@ -3,6 +3,8 @@ require 'helper'
 class CansTest < Test::Unit::TestCase
   context "Class with Canable::Cans included" do
     setup do
+      Canable.able_default = true
+
       can_class = Doc do
         include Canable::Cans
       end

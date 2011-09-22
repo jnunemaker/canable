@@ -2,6 +2,10 @@ require 'helper'
 
 class TestCanable < Test::Unit::TestCase
   context "Canable" do
+    setup do
+      Canable.able_default = true
+    end
+
     should "have view action by default" do
       assert_equal :viewable, Canable.actions[:view]
     end
