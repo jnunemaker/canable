@@ -23,7 +23,9 @@ module Canable
         klass.class_eval <<-EOM
           def #{able}_by?(*args)
             user, options = args
-            self.class.able_check(user, :#{able}, options || {})
+            options = options || {}
+            options.merge!(:instance => self)
+            self.class.able_check(user, :#{able}, options)
           end
         EOM
       end
