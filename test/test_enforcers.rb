@@ -3,6 +3,8 @@ require 'helper'
 class EnforcersTest < Test::Unit::TestCase
   context "Including Canable::Enforcers in a class" do
     setup do
+      Canable.able_default = true
+
       klass = Class.new do
         include Canable::Enforcers
         attr_accessor :current_user, :article
@@ -10,6 +12,12 @@ class EnforcersTest < Test::Unit::TestCase
         # Overriding example
         def can_update?(resource)
           return false if current_user && current_user.banned?
+          super
+        end
+        
+        # Override that accepts options
+        def can_destroy?(resource, options={})
+          return true if options && options[:secret] == "123"
           super
         end
 
@@ -20,9 +28,13 @@ class EnforcersTest < Test::Unit::TestCase
         def update
           enforce_update_permission(article)
         end
-
+        
         def edit
           enforce_update_permission(article, "You Can't Edit This")
+        end
+        
+        def destroy(options={})
+          enforce_destroy_permission(article, options)
         end
       end
 
@@ -34,12 +46,12 @@ class EnforcersTest < Test::Unit::TestCase
     end
 
     should "not raise error if can" do
-      @user.expects(:can_view?).with(@article).returns(true)
+      @user.expects(:can_view?).with(@article, nil).returns(true)
       assert_nothing_raised { @controller.show }
     end
 
     should "raise error if cannot" do
-      @user.expects(:can_view?).with(@article).returns(false)
+      @user.expects(:can_view?).with(@article, nil).returns(false)
       assert_raises(Canable::Transgression) { @controller.show }
     end
     
@@ -57,6 +69,24 @@ class EnforcersTest < Test::Unit::TestCase
       @controller.current_user = nil
       begin
         @controller.edit
+      rescue Canable::Transgression => e
+        assert_equal e.message, "You Can't Edit This"
+      end
+    end
+    
+    should "be able to define overridden can_xx? method with options" do
+      @user.expects(:can_destroy?).with(@article, {}).returns(false)
+      assert_raises(Canable::Transgression) { @controller.destroy }
+    end
+    
+    should "be able to use options on overridden can_xx? method" do
+      assert_nothing_raised { @controller.destroy(:secret => "123") }
+    end
+    
+    should "be able to pass a transgression message in the options hash" do
+      @controller.current_user = nil
+      begin
+        @controller.destroy(:message => "You Can't Edit This")
       rescue Canable::Transgression => e
         assert_equal e.message, "You Can't Edit This"
       end
