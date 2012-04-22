@@ -85,7 +85,7 @@ class ApplicationController
 end
 ```
 
-Including Canable::Enforcers adds an enforce permission method for each of the actions defined (by default view/create/update/destroy). It is the same thing as doing this for each Canable action:
+Including `Canable::Enforcers` adds an enforce permission method for each of the actions defined (by default view/create/update/destroy). It is the same thing as doing this for each Canable action:
 
 ```ruby
 class ApplicationController
