@@ -2,6 +2,12 @@
 
 Simple permissions that I have used on my last several projects so I figured it was time to abstract and wrap up into something more easily reusable.
 
+## Install
+
+```
+gem install canable
+```
+
 ## Cans
 
 Whatever class you want all permissions to run through should include Canable::Cans.
