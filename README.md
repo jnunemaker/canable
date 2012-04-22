@@ -146,7 +146,7 @@ Then in the article model, add the able check as a class method:
 
 ```ruby
 class Article
-  ...
+  # ...
   def self.indexable_by?(user)
     !user.nil?
   end
