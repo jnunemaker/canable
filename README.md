@@ -1,6 +1,6 @@
 # Canable
 
-Simple permissions that I have used on my last several projects so I figured it was time to abstract and wrap up into something more easily reusable.
+Simple permissions/authorization for Ruby projects.
 
 ## Install
 
