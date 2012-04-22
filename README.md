@@ -13,7 +13,7 @@ class User
 end
 ```
 
-This means that an instance of a user automatically gets can methods for the default REST actions: can_view?(resource), can_create?(resource), can_update?(resource), can_destroy?(resource).
+This means that an instance of a user automatically gets can methods for the default REST actions: `can_view?(resource)`, `can_create?(resource)`, `can_update?(resource)`, `can_destroy?(resource)`.
 
 ## Ables
 
@@ -26,9 +26,9 @@ class Article
 end
 ```
 
-Including Canable::Ables adds the able methods to the class including it. In this instance, article now has viewable_by?(user), creatable_by?(user), updatable_by?(user) and destroyable_by?(user).
+Including Canable::Ables adds the able methods to the class including it. In this instance, article now has `viewable_by?(user)`, `creatable_by?(user)`, `updatable_by?(user)` and `destroyable_by?(user)`.
 
-Lets say an article can be viewed and created by anyone, but only updated or destroyed by the user that created the article. To do that, you could leave viewable_by? and creatable_by? alone as they default to true and just override the other methods.
+Lets say an article can be viewed and created by anyone, but only updated or destroyed by the user that created the article. To do that, you could leave `viewable_by?` and `creatable_by?` alone as they default to true and just override the other methods.
 
 ```ruby
 class Article
@@ -107,7 +107,7 @@ class ArticlesController < ApplicationController
 end
 ```
 
-If the user can_view? the article, all is well. If not, a Canable::Transgression is raised which you can decide how to handle (show 404, slap them on the wrist, etc.).
+If the user `can_view?` the article, all is well. If not, a `Canable::Transgression` is raised which you can decide how to handle (show 404, slap them on the wrist, etc.).
 
 ## Adding Your Own Actions
 
@@ -117,7 +117,7 @@ You can add your own actions like this:
 Canable.add(:publish, :publishable)
 ```
 
-The first parameter is the can method (ie: can_publish?) and the second is the able method (ie: publishable_by?).
+The first parameter is the can method (ie: `can_publish?`) and the second is the able method (ie: `publishable_by?`).
 
 Ables can also be added as class methods. For example, to restrict access to an index action:
 
