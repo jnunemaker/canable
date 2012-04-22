@@ -1,6 +1,6 @@
 # Canable
 
-Simple permissions/authorization for Ruby projects.
+Simple Ruby authorization system.
 
 ## Install
 
