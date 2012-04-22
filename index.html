@@ -1,0 +1,226 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Canable by jnunemaker</title>
+    
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="wrapper">
+      <header>
+        <h1>Canable</h1>
+        <p>Simple Ruby authorization system.</p>
+        <p class="view"><a href="https://github.com/jnunemaker/canable">View the Project on GitHub <small>jnunemaker/canable</small></a></p>
+        <ul>
+          <li><a href="https://github.com/jnunemaker/canable/zipball/master">Download <strong>ZIP File</strong></a></li>
+          <li><a href="https://github.com/jnunemaker/canable/tarball/master">Download <strong>TAR Ball</strong></a></li>
+          <li><a href="https://github.com/jnunemaker/canable">Fork On <strong>GitHub</strong></a></li>
+        </ul>
+      </header>
+      <section>
+        <h2>Install</h2>
+
+<pre><code>gem install canable
+</code></pre>
+
+<h2>Cans</h2>
+
+<p>Whatever class you want all permissions to run through should include Canable::Cans.</p>
+
+<div class="highlight">
+<pre><span class="k">class</span> <span class="nc">User</span>
+  <span class="kp">include</span> <span class="no">MongoMapper</span><span class="o">::</span><span class="no">Document</span>
+  <span class="kp">include</span> <span class="no">Canable</span><span class="o">::</span><span class="no">Cans</span>
+<span class="k">end</span>
+</pre>
+</div>
+
+
+<p>This means that an instance of a user automatically gets can methods for the default REST actions: <code>can_view?(resource)</code>, <code>can_create?(resource)</code>, <code>can_update?(resource)</code>, <code>can_destroy?(resource)</code>.</p>
+
+<h2>Ables</h2>
+
+<p>Each of the can methods simply calls the related "able" method (viewable, creatable, updatable, destroyable) for the action (view, create, update, delete). Canable comes with defaults for this methods that you can then override as makes sense for your permissions.</p>
+
+<div class="highlight">
+<pre><span class="k">class</span> <span class="nc">Article</span>
+  <span class="kp">include</span> <span class="no">MongoMapper</span><span class="o">::</span><span class="no">Document</span>
+  <span class="kp">include</span> <span class="no">Canable</span><span class="o">::</span><span class="no">Ables</span>
+<span class="k">end</span>
+</pre>
+</div>
+
+
+<p>Including Canable::Ables adds the able methods to the class including it. In this instance, article now has <code>viewable_by?(user)</code>, <code>creatable_by?(user)</code>, <code>updatable_by?(user)</code> and <code>destroyable_by?(user)</code>.</p>
+
+<p>Lets say an article can be viewed and created by anyone, but only updated or destroyed by the user that created the article. To do that, you could leave <code>viewable_by?</code> and <code>creatable_by?</code> alone as they default to true and just override the other methods.</p>
+
+<div class="highlight">
+<pre><span class="k">class</span> <span class="nc">Article</span>
+  <span class="kp">include</span> <span class="no">MongoMapper</span><span class="o">::</span><span class="no">Document</span>
+  <span class="kp">include</span> <span class="no">Canable</span><span class="o">::</span><span class="no">Ables</span>
+  <span class="n">userstamps!</span> <span class="c1"># adds creator and updater</span>
+
+  <span class="k">def</span> <span class="nf">updatable_by?</span><span class="p">(</span><span class="n">user</span><span class="p">)</span>
+    <span class="n">creator</span> <span class="o">==</span> <span class="n">user</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">destroyable_by?</span><span class="p">(</span><span class="n">user</span><span class="p">)</span>
+    <span class="n">updatable_by?</span><span class="p">(</span><span class="n">user</span><span class="p">)</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</pre>
+</div>
+
+
+<p>Lets look at some sample code now:</p>
+
+<div class="highlight">
+<pre><span class="n">john</span> <span class="o">=</span> <span class="no">User</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="ss">:name</span> <span class="o">=&gt;</span> <span class="s1">'John'</span><span class="p">)</span>
+<span class="n">steve</span> <span class="o">=</span> <span class="no">User</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="ss">:name</span> <span class="o">=&gt;</span> <span class="s1">'Steve'</span><span class="p">)</span>
+
+<span class="n">ruby</span> <span class="o">=</span> <span class="no">Article</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="ss">:title</span> <span class="o">=&gt;</span> <span class="s1">'Ruby'</span><span class="p">)</span>
+<span class="n">john</span><span class="o">.</span><span class="n">can_create?</span><span class="p">(</span><span class="n">ruby</span><span class="p">)</span> <span class="c1"># true</span>
+<span class="n">steve</span><span class="o">.</span><span class="n">can_create?</span><span class="p">(</span><span class="n">ruby</span><span class="p">)</span> <span class="c1"># true</span>
+
+<span class="n">ruby</span><span class="o">.</span><span class="n">creator</span> <span class="o">=</span> <span class="n">john</span>
+<span class="n">ruby</span><span class="o">.</span><span class="n">save</span>
+
+<span class="n">john</span><span class="o">.</span><span class="n">can_view?</span><span class="p">(</span><span class="n">ruby</span><span class="p">)</span> <span class="c1"># true</span>
+<span class="n">steve</span><span class="o">.</span><span class="n">can_view?</span><span class="p">(</span><span class="n">ruby</span><span class="p">)</span> <span class="c1"># true</span>
+
+<span class="n">john</span><span class="o">.</span><span class="n">can_update?</span><span class="p">(</span><span class="n">ruby</span><span class="p">)</span> <span class="c1"># true</span>
+<span class="n">steve</span><span class="o">.</span><span class="n">can_update?</span><span class="p">(</span><span class="n">ruby</span><span class="p">)</span> <span class="c1"># false</span>
+
+<span class="n">john</span><span class="o">.</span><span class="n">can_destroy?</span><span class="p">(</span><span class="n">ruby</span><span class="p">)</span> <span class="c1"># true</span>
+<span class="n">steve</span><span class="o">.</span><span class="n">can_destroy?</span><span class="p">(</span><span class="n">ruby</span><span class="p">)</span> <span class="c1"># false</span>
+</pre>
+</div>
+
+
+<p>Now we can implement our permissions for each resource and then always check whether a user can or cannot do something. This makes it all really easy to test. Next, how would you use this in the controller.</p>
+
+<h2>Enforcers</h2>
+
+<div class="highlight">
+<pre><span class="k">class</span> <span class="nc">ApplicationController</span>
+  <span class="kp">include</span> <span class="no">Canable</span><span class="o">::</span><span class="no">Enforcers</span>
+<span class="k">end</span>
+</pre>
+</div>
+
+
+<p>Including <code>Canable::Enforcers</code> adds an enforce permission method for each of the actions defined (by default view/create/update/destroy). It is the same thing as doing this for each Canable action:</p>
+
+<div class="highlight">
+<pre><span class="k">class</span> <span class="nc">ApplicationController</span>
+  <span class="kp">include</span> <span class="no">Canable</span><span class="o">::</span><span class="no">Enforcers</span>
+
+  <span class="n">delegate</span> <span class="ss">:can_view?</span><span class="p">,</span> <span class="ss">:to</span> <span class="o">=&gt;</span> <span class="ss">:current_user</span>
+  <span class="n">helper_method</span> <span class="ss">:can_view?</span> <span class="c1"># so you can use it in your views</span>
+  <span class="n">hide_action</span> <span class="ss">:can_view?</span>
+
+  <span class="kp">private</span>
+    <span class="k">def</span> <span class="nf">enforce_view_permission</span><span class="p">(</span><span class="n">resource</span><span class="p">)</span>
+      <span class="k">raise</span> <span class="no">Canable</span><span class="o">::</span><span class="no">Transgression</span> <span class="k">unless</span> <span class="n">can_view?</span><span class="p">(</span><span class="n">resource</span><span class="p">)</span>
+    <span class="k">end</span>
+<span class="k">end</span>
+</pre>
+</div>
+
+
+<p>Which means you can use it like this:</p>
+
+<div class="highlight">
+<pre><span class="k">class</span> <span class="nc">ArticlesController</span> <span class="o">&lt;</span> <span class="no">ApplicationController</span>
+  <span class="k">def</span> <span class="nf">show</span>
+    <span class="vi">@article</span> <span class="o">=</span> <span class="no">Article</span><span class="o">.</span><span class="n">find!</span><span class="p">(</span><span class="n">params</span><span class="o">[</span><span class="ss">:id</span><span class="o">]</span><span class="p">)</span>
+    <span class="n">enforce_view_permission</span><span class="p">(</span><span class="vi">@article</span><span class="p">)</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</pre>
+</div>
+
+
+<p>If the user <code>can_view?</code> the article, all is well. If not, a <code>Canable::Transgression</code> is raised which you can decide how to handle (show 404, slap them on the wrist, etc.).</p>
+
+<h2>Adding Your Own Actions</h2>
+
+<p>You can add your own actions like this:</p>
+
+<div class="highlight">
+<pre><span class="no">Canable</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="ss">:publish</span><span class="p">,</span> <span class="ss">:publishable</span><span class="p">)</span>
+</pre>
+</div>
+
+
+<p>The first parameter is the can method (ie: <code>can_publish?</code>) and the second is the able method (ie: <code>publishable_by?</code>).</p>
+
+<p>Ables can also be added as class methods. For example, to restrict access to an index action:</p>
+
+<div class="highlight">
+<pre><span class="no">Canable</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="ss">:index</span><span class="p">,</span> <span class="ss">:indexable</span><span class="p">)</span>
+</pre>
+</div>
+
+
+<p>Then enforce by passing the class instead of the instance:</p>
+
+<div class="highlight">
+<pre><span class="k">class</span> <span class="nc">ArticlesController</span> <span class="o">&lt;</span> <span class="no">ApplicationController</span>
+  <span class="k">def</span> <span class="nf">index</span>
+    <span class="vi">@articles</span> <span class="o">=</span> <span class="no">Article</span><span class="o">.</span><span class="n">all</span>
+    <span class="n">enforce_index_permission</span><span class="p">(</span><span class="no">Article</span><span class="p">)</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</pre>
+</div>
+
+
+<p>Then in the article model, add the able check as a class method:</p>
+
+<div class="highlight">
+<pre><span class="k">class</span> <span class="nc">Article</span>
+  <span class="c1"># ...</span>
+  <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">indexable_by?</span><span class="p">(</span><span class="n">user</span><span class="p">)</span>
+    <span class="o">!</span><span class="n">user</span><span class="o">.</span><span class="n">nil?</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</pre>
+</div>
+
+
+<h2>Review</h2>
+
+<p>So, lets review: cans go on user model, ables go on everything, you override ables in each model where you want to enforce permissions, and enforcers go after each time you find or initialize an object in a controller. Bing, bang, boom.</p>
+
+<h2>Contributing</h2>
+
+<ul>
+<li>Fork the project.</li>
+<li>Make your feature addition or bug fix.</li>
+<li>Add tests for it. This is important so I don't break it in a
+future version unintentionally.</li>
+<li>Commit, do not mess with rakefile, version, or history.
+(if you want to have your own version, that is fine but bump version in a commit by itself I can ignore when I pull)</li>
+<li>Send me a pull request. Bonus points for topic branches.</li>
+</ul><h2>Copyright</h2>
+
+<p>Copyright (c) 2010 John Nunemaker. See <a href="https://github.com/jnunemaker/canable/blob/master/LICENSE">LICENSE</a> for details.</p>
+      </section>
+      <footer>
+        <p>This project is maintained by <a href="https://github.com/jnunemaker">jnunemaker</a></p>
+        <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></small></p>
+      </footer>
+    </div>
+    <script src="javascripts/scale.fix.js"></script>
+    
+  </body>
+</html>
