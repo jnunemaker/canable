@@ -1,136 +1,158 @@
-= Canable
+# Canable
 
 Simple permissions that I have used on my last several projects so I figured it was time to abstract and wrap up into something more easily reusable.
 
-== Cans
+## Cans
 
 Whatever class you want all permissions to run through should include Canable::Cans.
 
-    class User
-      include MongoMapper::Document
-      include Canable::Cans
-    end
+```ruby
+class User
+  include MongoMapper::Document
+  include Canable::Cans
+end
+```
 
 This means that an instance of a user automatically gets can methods for the default REST actions: can_view?(resource), can_create?(resource), can_update?(resource), can_destroy?(resource).
 
-== Ables
+## Ables
 
 Each of the can methods simply calls the related "able" method (viewable, creatable, updatable, destroyable) for the action (view, create, update, delete). Canable comes with defaults for this methods that you can then override as makes sense for your permissions.
 
-    class Article
-      include MongoMapper::Document
-      include Canable::Ables
-    end
+```ruby
+class Article
+  include MongoMapper::Document
+  include Canable::Ables
+end
+```
 
 Including Canable::Ables adds the able methods to the class including it. In this instance, article now has viewable_by?(user), creatable_by?(user), updatable_by?(user) and destroyable_by?(user).
 
 Lets say an article can be viewed and created by anyone, but only updated or destroyed by the user that created the article. To do that, you could leave viewable_by? and creatable_by? alone as they default to true and just override the other methods.
 
-    class Article
-      include MongoMapper::Document
-      include Canable::Ables
-      userstamps! # adds creator and updater
-      
-      def updatable_by?(user)
-        creator == user
-      end
-      
-      def destroyable_by?(user)
-        updatable_by?(user)
-      end
-    end
+```ruby
+class Article
+  include MongoMapper::Document
+  include Canable::Ables
+  userstamps! # adds creator and updater
+
+  def updatable_by?(user)
+    creator == user
+  end
+
+  def destroyable_by?(user)
+    updatable_by?(user)
+  end
+end
+```
 
 Lets look at some sample code now:
 
-    john = User.create(:name => 'John')
-    steve = User.create(:name => 'Steve')
-    
-    ruby = Article.new(:title => 'Ruby')
-    john.can_create?(ruby) # true
-    steve.can_create?(ruby) # true
-    
-    ruby.creator = john
-    ruby.save
-    
-    john.can_view?(ruby) # true
-    steve.can_view?(ruby) # true
-    
-    john.can_update?(ruby) # true
-    steve.can_update?(ruby) # false
-    
-    john.can_destroy?(ruby) # true
-    steve.can_destroy?(ruby) # false
-    
+```ruby
+john = User.create(:name => 'John')
+steve = User.create(:name => 'Steve')
+
+ruby = Article.new(:title => 'Ruby')
+john.can_create?(ruby) # true
+steve.can_create?(ruby) # true
+
+ruby.creator = john
+ruby.save
+
+john.can_view?(ruby) # true
+steve.can_view?(ruby) # true
+
+john.can_update?(ruby) # true
+steve.can_update?(ruby) # false
+
+john.can_destroy?(ruby) # true
+steve.can_destroy?(ruby) # false
+```
+
 Now we can implement our permissions for each resource and then always check whether a user can or cannot do something. This makes it all really easy to test. Next, how would you use this in the controller.
 
-== Enforcers
+## Enforcers
 
-    class ApplicationController
-      include Canable::Enforcers
-    end
+```ruby
+class ApplicationController
+  include Canable::Enforcers
+end
+```
 
 Including Canable::Enforcers adds an enforce permission method for each of the actions defined (by default view/create/update/destroy). It is the same thing as doing this for each Canable action:
 
-    class ApplicationController
-      include Canable::Enforcers
+```ruby
+class ApplicationController
+  include Canable::Enforcers
 
-      delegate :can_view?, :to => :current_user
-      helper_method :can_view? # so you can use it in your views
-      hide_action :can_view?
+  delegate :can_view?, :to => :current_user
+  helper_method :can_view? # so you can use it in your views
+  hide_action :can_view?
 
-      private
-        def enforce_view_permission(resource)
-          raise Canable::Transgression unless can_view?(resource)
-        end
+  private
+    def enforce_view_permission(resource)
+      raise Canable::Transgression unless can_view?(resource)
     end
+end
+```
 
 Which means you can use it like this:
 
-    class ArticlesController < ApplicationController
-      def show
-        @article = Article.find!(params[:id])
-        enforce_view_permission(@article)
-      end
-    end
+```ruby
+class ArticlesController < ApplicationController
+  def show
+    @article = Article.find!(params[:id])
+    enforce_view_permission(@article)
+  end
+end
+```
 
 If the user can_view? the article, all is well. If not, a Canable::Transgression is raised which you can decide how to handle (show 404, slap them on the wrist, etc.).
 
-== Adding Your Own Actions
+## Adding Your Own Actions
 
 You can add your own actions like this:
 
-    Canable.add(:publish, :publishable)
+```ruby
+Canable.add(:publish, :publishable)
+```
 
-The first parameter is the can method (ie: can_publish?) and the second is the able method (ie: publishable_by?). 
+The first parameter is the can method (ie: can_publish?) and the second is the able method (ie: publishable_by?).
 
 Ables can also be added as class methods. For example, to restrict access to an index action:
 
-    Canable.add(:index, :indexable)
-    
+```ruby
+Canable.add(:index, :indexable)
+```
+
 Then enforce by passing the class instead of the instance:
 
-    class ArticlesController < ApplicationController
-      def index
-        @articles = Article.all
-        enforce_index_permission(Article)
-      end
-    end
+```ruby
+class ArticlesController < ApplicationController
+  def index
+    @articles = Article.all
+    enforce_index_permission(Article)
+  end
+end
+```
 
 Then in the article model, add the able check as a class method:
 
-    class Article
-      ...
-      def self.indexable_by?(user)
-        !user.nil?
-      end
-    end
+```ruby
+class Article
+  ...
+  def self.indexable_by?(user)
+    !user.nil?
+  end
+end
+```
 
-== Review
+## Review
 
 So, lets review: cans go on user model, ables go on everything, you override ables in each model where you want to enforce permissions, and enforcers go after each time you find or initialize an object in a controller. Bing, bang, boom.
 
-== Note on Patches/Pull Requests
- 
+## Contributing
+
 * Fork the project.
 * Make your feature addition or bug fix.
 * Add tests for it. This is important so I don't break it in a
@@ -139,6 +161,6 @@ So, lets review: cans go on user model, ables go on everything, you override abl
   (if you want to have your own version, that is fine but bump version in a commit by itself I can ignore when I pull)
 * Send me a pull request. Bonus points for topic branches.
 
-== Copyright
+## Copyright
 
 Copyright (c) 2010 John Nunemaker. See LICENSE for details.
