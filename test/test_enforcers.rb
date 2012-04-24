@@ -5,7 +5,7 @@ class EnforcersTest < Test::Unit::TestCase
     setup do
       klass = Class.new do
         include Canable::Enforcers
-        attr_accessor :current_user, :article
+        attr_accessor :current_user, :article, :enforce_calls
 
         # Overriding example
         def can_update?(resource)
@@ -23,6 +23,11 @@ class EnforcersTest < Test::Unit::TestCase
 
         def edit
           enforce_update_permission(article, "You Can't Edit This")
+        end
+
+        def handle_enforce(object, permission)
+          @enforce_calls ||= []
+          @enforce_calls << [object, permission]
         end
       end
 
@@ -42,12 +47,12 @@ class EnforcersTest < Test::Unit::TestCase
       @user.expects(:can_view?).with(@article).returns(false)
       assert_raises(Canable::Transgression) { @controller.show }
     end
-    
+
     should "raise error whenever current_user nil" do
       @controller.current_user = nil
       assert_raises(Canable::Transgression) { @controller.show }
     end
-    
+
     should "be able to override can_xx? method" do
       @user.expects(:banned?).returns(true)
       assert_raises(Canable::Transgression) { @controller.update }
@@ -60,6 +65,19 @@ class EnforcersTest < Test::Unit::TestCase
       rescue Canable::Transgression => e
         assert_equal e.message, "You Can't Edit This"
       end
+    end
+
+    should "notify observers of the enforcer call" do
+      @user.expects(:can_view?).with(@article).returns(true)
+      @user.expects(:can_update?).with(@article).returns(true)
+      @user.expects(:banned?).returns(false)
+
+      @controller.show
+      @controller.update
+
+      calls = @controller.enforce_calls
+      assert_includes(calls, [:view, @article])
+      assert_includes(calls, [:update, @article])
     end
   end
 end

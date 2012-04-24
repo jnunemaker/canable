@@ -70,6 +70,9 @@ module Canable
 
         def enforce_#{can}_permission(resource, message="")
           raise(Canable::Transgression, message) unless can_#{can}?(resource)
+          if respond_to?(:handle_enforce)
+            send(:handle_enforce, :#{can}, resource)
+          end
         end
         private :enforce_#{can}_permission
       EOM
