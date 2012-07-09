@@ -75,7 +75,7 @@ john.can_destroy?(ruby) # true
 steve.can_destroy?(ruby) # false
 ```
 
-In one common pattern, a single permission flag controls whether or not users can perform multiple administrator-specific operations. Canable can honor that flag with:
+Now we can implement our permissions for each resource and then always check whether a user can or cannot do something. This makes it all really easy to test. In one common pattern, a single permission flag controls whether or not users can perform multiple administrator-specific operations. Canable can honor that flag with:
 
 ```ruby
 def writable_by?(user)
@@ -86,7 +86,7 @@ alias_method :updatable_by?, :writable_by?
 alias_method :destroyable_by?, :writable_by?
 ```
 
-Now we can implement our permissions for each resource and then always check whether a user can or cannot do something. This makes it all really easy to test. Next, how would you use this in the controller.
+Next, how would you use this in the controller. 
 
 ## Enforcers
 
