@@ -52,7 +52,7 @@ class Article
 end
 ```
 
-Lets look at some sample code now:
+Let's look at some sample code now:
 
 ```ruby
 john = User.create(:name => 'John')
@@ -73,6 +73,17 @@ steve.can_update?(ruby) # false
 
 john.can_destroy?(ruby) # true
 steve.can_destroy?(ruby) # false
+```
+
+In one common pattern, a single permission flag controls whether or not users can perform multiple administrator-specific operations. Canable can honor that flag with:
+
+```ruby
+def writable_by?(user)
+  user.can_do_anything?
+end
+alias_method :creatable_by?, :writable_by?
+alias_method :updatable_by?, :writable_by?
+alias_method :destroyable_by?, :writable_by?
 ```
 
 Now we can implement our permissions for each resource and then always check whether a user can or cannot do something. This makes it all really easy to test. Next, how would you use this in the controller.
@@ -113,7 +124,18 @@ class ArticlesController < ApplicationController
 end
 ```
 
-If the user `can_view?` the article, all is well. If not, a `Canable::Transgression` is raised which you can decide how to handle (show 404, slap them on the wrist, etc.).
+If the user `can_view?` the article, all is well. If not, a `Canable::Transgression` is raised which you can decide how to handle (show 404, slap them on the wrist, etc.). For example:
+
+```ruby
+class ApplicationController < ActionController::Base
+  rescue_from Canable::Transgression, :with => :render_403
+
+  protected
+  def render_403(e)
+    # notify normal exception handler(s) here
+    render :status => 403
+  end
+```
 
 ## Adding Your Own Actions
 
