@@ -1,6 +1,6 @@
 require 'helper'
 
-class TestCanable < Test::Unit::TestCase
+class TestCanable < Minitest::Test
   context "Canable" do
     should "have view action by default" do
       assert_equal :viewable, Canable.actions[:view]
@@ -17,14 +17,15 @@ class TestCanable < Test::Unit::TestCase
     should "have destroy action by default" do
       assert_equal :destroyable, Canable.actions[:destroy]
     end
-    
+
     should "be able to add another action" do
       Canable.add(:publish, :publishable)
       assert_equal :publishable, Canable.actions[:publish]
     end
-    
+
     should "know cans" do
-      assert_equal %w(create destroy publish update view), 
+      Canable.add(:publish, :publishable)
+      assert_equal %w(create destroy publish update view),
         Canable.cans.map(&:to_s).sort
     end
   end
