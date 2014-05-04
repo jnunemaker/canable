@@ -1,6 +1,6 @@
 require 'helper'
 
-class EnforcersTest < Test::Unit::TestCase
+class EnforcersTest < Minitest::Test
   context "Including Canable::Enforcers in a class" do
     setup do
       klass = Class.new do
@@ -35,19 +35,20 @@ class EnforcersTest < Test::Unit::TestCase
 
     should "not raise error if can" do
       @user.expects(:can_view?).with(@article).returns(true)
-      assert_nothing_raised { @controller.show }
+      @controller.show
+      # Got this far, so no exception was raised
     end
 
     should "raise error if cannot" do
       @user.expects(:can_view?).with(@article).returns(false)
       assert_raises(Canable::Transgression) { @controller.show }
     end
-    
+
     should "raise error whenever current_user nil" do
       @controller.current_user = nil
       assert_raises(Canable::Transgression) { @controller.show }
     end
-    
+
     should "be able to override can_xx? method" do
       @user.expects(:banned?).returns(true)
       assert_raises(Canable::Transgression) { @controller.update }

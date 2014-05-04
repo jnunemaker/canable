@@ -1,12 +1,12 @@
 require 'helper'
 
-class CansTest < Test::Unit::TestCase
+class CansTest < Minitest::Test
   context "Class with Canable::Cans included" do
     setup do
       klass = Doc do
         include Canable::Cans
       end
-      
+
       @user = klass.new(:name => 'John')
     end
 
